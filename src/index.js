@@ -1,3 +1,4 @@
+const { application, request } = require('express');
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 
@@ -7,9 +8,9 @@ app.use(express.json())
 
 const customers = [];
 
+// Creatae account
 app.post("/account", (request, response) => {
   const {cpf, name} = request.body;
-  const id = uuidv4();
 
   const customerAlreadyExists = customers.some(customer => customer.cpf === cpf);
 
@@ -19,11 +20,23 @@ app.post("/account", (request, response) => {
   customers.push({
     cpf,
     name,
-    id,
+    id: uuidv4(),
     statement: []
   });
 
   return response.status(201).send();
 })
+
+// Search statemen
+app.get("/statement", (request, response) => {
+  const { cpf } = request.headers;
+
+  const customer = customers.find(customer => customer.cpf === cpf);
+
+  if(customer)
+    return response.status(200).json(customer.statement);
+  
+  return response.status(400).json({error: "Customer not found"});
+});
 
 app.listen(3333, () => console.log('Server running at port 3333'));
